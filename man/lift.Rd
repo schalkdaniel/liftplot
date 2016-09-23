@@ -5,15 +5,15 @@
 \method{lift}(pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft', ...)
 }
 \arguments{
-\item{pred}{A vector of predictions or a object of class 'lm', 'glm', 'rfsrc' or 'randomForest'}
+	\item{pred}{A vector of predictions or a object of class 'lm', 'glm', 'rfsrc' or 'randomForest'}
 
-\item{ist}{A vector of the values which were predicted}
+	\item{ist}{A vector of the values which were predicted}
 
-\item{ngroups}{An integer number of groups}
+	\item{ngroups}{An integer number of groups}
 
-\item{legend.pos}{Position of the legend ("bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right", "center", NA)}
+	\item{legend.pos}{Position of the legend ("bottomright", "bottom", "bottomleft", "left", "topleft", "top", "topright", "right", "center", NA)}
 
-\item{...}{Additional prameter which can be passed to plot}
+	\item{...}{Additional prameter which can be passed to plot}
 }
 \description{
 The function creates a liftplot. You can use it for validate the goodnes of the prediction of a model.
