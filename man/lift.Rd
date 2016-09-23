@@ -7,7 +7,7 @@
 \arguments{
 	\item{pred}{A vector of predictions or a object of class 'lm', 'glm', 'rfsrc' or 'randomForest'}
 
-	\item{ist}{A vector of the values which were predicted}
+	\item{ist}{An additional vector of the values which were predicted}
 
 	\item{ngroups}{An integer number of groups}
 
