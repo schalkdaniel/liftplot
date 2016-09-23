@@ -1,6 +1,6 @@
 liftplot
 ========
-This package/function gives just one function called 'lift'. With this function one can descriptive validate the goodnes of a prediction of a model.
+This package/function gives just one function called 'lift'. With this function one can descriptive validate the goodnes of the prediction of a model.
 
 Therefore some standard classes like 'lm', 'glm', 'randomForest' or 'nls' are implemented. If a specific class isn't supported one have the opportunity to give manually a prediction vector and a vector with the real values.
 
