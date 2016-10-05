@@ -16,7 +16,7 @@ all.true <- function( bool )
 }
 
 ## Create data.frame for computation:
-getDF <- function( pred, ist )
+getDF <- function( pred, ist, weights )
 {
   DF <- NULL
   cs <- NA
@@ -55,8 +55,16 @@ getDF <- function( pred, ist )
     cs <- class(pred)
   }
   
-  if ( !is.null(DF) ) { 
-    names(DF)      <- c('Predict', 'IstValues')
+  if ( is.na(weights)[1] ) {
+    weights <- rep( 1, length(DF$Predict) )
+  }
+  if ( length(weights) != length(DF$Predict) ) {
+    stop( "Length of 'weights' must match 'pred' and 'ist'" )
+  }
+  DF <- cbind( DF, weights = weights )
+  
+  if ( ! is.null(DF) ) { 
+    names(DF)[1:2]      <- c('Predict', 'IstValues')
     attr(DF, 'cs') <- cs
   }
   
@@ -66,7 +74,8 @@ getDF <- function( pred, ist )
 # -----------------------------------------------------------------------------#
 # Main plot function:
 # -----------------------------------------------------------------------------#
-lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft', ... )
+lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
+                  ngroups = 10L, legend.pos = 'bottomleft', ... )
 {
   if ( ngroups %% 2 == 0 ) { ngroups <- as.integer(ngroups) }
   if ( ngroups < 1 ) {
@@ -85,7 +94,7 @@ lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft', ... 
     legend.pos <- NA
   }
   
-  DF <- getDF( pred = pred, ist = ist )
+  DF <- getDF( pred = pred, ist = ist, weights = weights )
   at <- attr(DF, 'cs')
   if ( is.null(DF) ) { stop('Check your input values') }
   
@@ -103,8 +112,23 @@ lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft', ... 
                          IstVAluesMean  = numeric(ngroups) )
   
   for ( i in 1:ngroups ) {
-    DF_mean[i, ] <- c( mean(DF[DF$nGroup == i, 'Predict']),
-                       mean(DF[DF$nGroup == i, 'IstValues'] ) )
+    if ( w.pred ) {
+      DF_mean[i, ] <- c( weighted.mean(x = DF[DF$nGroup == i, 'Predict'],
+                                       w = DF[DF$nGroup == i, 'weights']),
+                         mean(x = DF[DF$nGroup == i, 'IstValues']) )
+    }
+    if ( w.ist ) {
+      
+      DF_mean[i, ] <- c( mean(x = DF[DF$nGroup == i, 'Predict']),
+                         weighted.mean(x = DF[DF$nGroup == i, 'IstValues'],
+                                       w = DF[DF$nGroup == i, 'weights']) )
+    }
+    if ( ! w.ist && ! w.pred ) {
+      DF_mean[i, ] <- c( weighted.mean(x = DF[DF$nGroup == i, 'Predict'],
+                                       w = DF[DF$nGroup == i, 'weights']),
+                         weighted.mean(x = DF[DF$nGroup == i, 'IstValues'],
+                                       w = DF[DF$nGroup == i, 'weights']) )
+    }
   }
   
   Args <- list( ... )
