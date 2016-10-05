@@ -75,7 +75,8 @@ getDF <- function( pred, ist, weights )
 # Main plot function:
 # -----------------------------------------------------------------------------#
 lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
-                  ngroups = 10L, legend.pos = 'bottomleft', ... )
+                  ngroups = 10L, legend.pos = 'bottomleft', ylim.defoult = FALSE,
+                  ... )
 {
   if ( ngroups %% 2 == 0 ) { ngroups <- as.integer(ngroups) }
   if ( ngroups < 1 ) {
@@ -149,7 +150,17 @@ lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
           main = main,
           axes = FALSE )
   } else {
-    plot( x = DF_mean$PredictionMean, ... )
+    if ( ylim.defoult ) {
+      plot( x = DF_mean$PredictionMean,
+            ylim = c( min(c(DF_mean$PredictionMean, 
+                            DF_mean$IstVAluesMean)),
+                      max(c(DF_mean$PredictionMean, 
+                            DF_mean$IstVAluesMean)) ), 
+            ... )
+    } else {
+      plot( x = DF_mean$PredictionMean, ... )
+    }
+    
   }
   
   xaxp <- seq(par()$xaxp[1], par()$xaxp[2], length.out = par()$xaxp[3] + 1)
