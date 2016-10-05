@@ -150,7 +150,7 @@ lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
           main = main,
           axes = FALSE )
   } else {
-    if ( ylim.defoult ) {
+    if ( ylim.default ) {
       plot( x = DF_mean$PredictionMean,
             ylim = c( min(c(DF_mean$PredictionMean, 
                             DF_mean$IstVAluesMean)),
