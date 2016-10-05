@@ -75,7 +75,7 @@ getDF <- function( pred, ist, weights )
 # Main plot function:
 # -----------------------------------------------------------------------------#
 lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
-                  ngroups = 10L, legend.pos = 'bottomleft', ylim.defoult = FALSE,
+                  ngroups = 10L, legend.pos = 'bottomleft', ylim.default = FALSE,
                   ... )
 {
   if ( ngroups %% 2 == 0 ) { ngroups <- as.integer(ngroups) }

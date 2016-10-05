@@ -8,10 +8,16 @@
 	\item{pred}{A vector of predictions or a object of class 'lm', 'glm', 'rfsrc' or 'randomForest'}
 
 	\item{ist}{An additional vector of the values which were predicted}
+	
+	\item{w.pred}{Apply the weights only on the prediction values}
+	
+	\item{w.ist}{Apply the weights only on the ist-values}
 
 	\item{ngroups}{An integer number of groups}
 
 	\item{legend.pos}{Position of the legend ('bottomright', 'bottom', 'bottomleft', 'left', 'topleft', 'top', 'topright', 'right', 'center', NA)}
+	
+	\item{ylim.default}{If the default ylim values should be used with additional parameters to plot, than set to 'ylim.default = TRUE'}
 
 	\item{...}{Additional prameter which can be passed to plot}
 }
