@@ -2,7 +2,9 @@
 \alias{lift}
 \title{Create a liftplot}
 \usage{
-	lift(pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft', ...)
+	lift( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
+          ngroups = 10L, legend.pos = 'bottomleft', ylim.default = FALSE,
+          ... )
 }
 \arguments{
 	\item{pred}{A vector of predictions or a object of class 'lm', 'glm', 'rfsrc' or 'randomForest'}
