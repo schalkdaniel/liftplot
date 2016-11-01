@@ -5,6 +5,33 @@
 # -----------------------------------------------------------------------------#
 # Auxiliary functions:
 # -----------------------------------------------------------------------------#
+
+## Get the data for a boxplot:
+getBoxData <- function(x)
+{
+  IQR        <- quantile(x, 0.75) - quantile(x, 0.25)
+  maxwhisker <- abs( 1.5 * IQR )
+  
+  if ( min(x) < quantile(x, 0.25) - maxwhisker ) {
+    lowerwhisker <- sort(x)[ min( which(sort(x) >= quantile(x, 0.25) - maxwhisker) ) ]
+  } else {
+    lowerwhisker <- min(x)
+  }
+  if ( max(x) > quantile(x, 0.25) - maxwhisker ) {
+    upperwhisker <- sort(x)[ max( which(sort(x) <= quantile(x, 0.75) + maxwhisker) ) ]
+  } else {
+    upperwhisker <- max(x)
+  }
+  
+  values     <- c( lowerwhisker  = lowerwhisker,
+                   lowerquantile = quantile(x, 0.25),
+                   median        = median(x),
+                   upperquantile = quantile(x, 0.75),
+                   upperwhisker  = upperwhisker )
+  
+  return( values )
+}
+
 ## check if every entry is TRUE:
 all.true <- function( bool )
 {
@@ -16,7 +43,7 @@ all.true <- function( bool )
 }
 
 ## Create data.frame for computation:
-getDF <- function( pred, ist, weights )
+getDF <- function( pred, ist )
 {
   DF <- NULL
   cs <- NA
@@ -55,14 +82,6 @@ getDF <- function( pred, ist, weights )
     cs <- class(pred)
   }
   
-  if ( is.na(weights)[1] ) {
-    weights <- rep( 1, length(DF$Predict) )
-  }
-  if ( length(weights) != length(DF$Predict) ) {
-    stop( "Length of 'weights' must match 'pred' and 'ist'" )
-  }
-  DF <- cbind( DF, weights = weights )
-  
   if ( ! is.null(DF) ) { 
     names(DF)[1:2]      <- c('Predict', 'IstValues')
     attr(DF, 'cs') <- cs
@@ -74,30 +93,35 @@ getDF <- function( pred, ist, weights )
 # -----------------------------------------------------------------------------#
 # Main plot function:
 # -----------------------------------------------------------------------------#
-lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
-                  ngroups = 10L, legend.pos = 'bottomleft', ylim.default = FALSE,
+lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft', 
+                  ylim.default = TRUE, bullets = 'normal', bullets.cex = 2, 
                   ... )
 {
   if ( ngroups %% 2 == 0 ) { ngroups <- as.integer(ngroups) }
   if ( ngroups < 1 ) {
     stop( 'No values < 1 allowed for ngroups' )
   }
-  if ( !is.integer(ngroups) ) {
+  if ( ! is.integer(ngroups) ) {
     if ( is.double(ngroups) ) {
       ngroups <- floor(ngroups)
       warning( paste0('Floor ngroups to ', ngroups, ' (double) input') )
     }
   }
   
-  if (! legend.pos %in% c('bottomright', 'bottom', 'bottomleft', 'left', 'topleft', 'top', 'topright', 'right', 'center') &&
-      ! is.na(legend.pos) ) {
+  if ( ! bullets %in% c('normal', 'boxplot') ) { 
+    warning( "No option for the bullets given, set bullets = 'normal'" ) 
+    bullets <- 'normal'
+  }
+  
+  if ( ! legend.pos %in% c('bottomright', 'bottom', 'bottomleft', 'left', 'topleft', 'top', 'topright', 'right', 'center') &&
+       ! is.na(legend.pos) ) {
     warning( 'Remove legend, no match for any position' )
     legend.pos <- NA
   }
   
-  DF <- getDF( pred = pred, ist = ist, weights = weights )
+  DF <- getDF( pred = pred, ist = ist )
   at <- attr(DF, 'cs')
-  if ( is.null(DF) ) { stop('Check your input values') }
+  if ( is.null(DF) ) { stop( 'Check your input values' ) }
   
   DF        <- DF[order(DF$Predict, decreasing = TRUE), ]
   nGroup    <- sort( rep(1:ngroups, floor(nrow(DF) / ngroups) ) )
@@ -112,27 +136,36 @@ lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
   DF_mean <- data.frame( PredictionMean = numeric(ngroups), 
                          IstVAluesMean  = numeric(ngroups) )
   
+  if ( bullets == 'boxplot' ) { 
+    bp_data <- matrix( data = numeric(5 * ngroups), 
+                       ncol = 5 ) 
+  }
+  
   for ( i in 1:ngroups ) {
-    if ( w.pred ) {
-      DF_mean[i, ] <- c( weighted.mean(x = DF[DF$nGroup == i, 'Predict'],
-                                       w = DF[DF$nGroup == i, 'weights']),
-                         mean(x = DF[DF$nGroup == i, 'IstValues']) )
-    }
-    if ( w.ist ) {
-      
-      DF_mean[i, ] <- c( mean(x = DF[DF$nGroup == i, 'Predict']),
-                         weighted.mean(x = DF[DF$nGroup == i, 'IstValues'],
-                                       w = DF[DF$nGroup == i, 'weights']) )
-    }
-    if ( ! w.ist && ! w.pred ) {
-      DF_mean[i, ] <- c( weighted.mean(x = DF[DF$nGroup == i, 'Predict'],
-                                       w = DF[DF$nGroup == i, 'weights']),
-                         weighted.mean(x = DF[DF$nGroup == i, 'IstValues'],
-                                       w = DF[DF$nGroup == i, 'weights']) )
+    
+    DF_mean[i, ] <- c( mean( x = DF[DF$nGroup == i, 'Predict']   ),
+                       mean( x = DF[DF$nGroup == i, 'IstValues'] ) )
+    
+    if ( bullets == 'boxplot' ) { 
+      bp_data[i, ] <- getBoxData( x = DF[DF$nGroup == i, 'IstValues'] )
     }
   }
   
   Args <- list( ... )
+  
+  if ( ! is.null(Args$font) ) {
+    font <- Args$font
+    Args <- Args[-which(names(Args) == 'font')]
+  } else {
+    font <- 1
+  }
+  
+  if ( ! is.null(Args$font.main) ) {
+    font.main <- Args$font.main
+    Args      <- Args[-which(names(Args) == 'font.main')]
+  } else {
+    font.main <- font + 1
+  }
   
   if ( length(Args) == 0 ) {
     if ( nchar( attr(DF, 'cs') ) > 0 ) {
@@ -140,27 +173,72 @@ lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
     } else {
       main <- 'Liftplot'
     }
-    plot( x    = DF_mean$PredictionMean,
-          ylim = c( min(c(DF_mean$PredictionMean, 
-                          DF_mean$IstVAluesMean)),
-                    max(c(DF_mean$PredictionMean, 
-                          DF_mean$IstVAluesMean)) ),
-          xlab = 'Groups',
-          ylab = 'Mean',
-          main = main,
-          axes = FALSE )
+    if ( bullets == 'normal' ) {
+      plot( x    = DF_mean$PredictionMean,
+            ylim = c( min( c(DF_mean$PredictionMean, 
+                             DF_mean$IstVAluesMean) ),
+                      max( c(DF_mean$PredictionMean, 
+                             DF_mean$IstVAluesMean) ) ),
+            xlab = 'Groups',
+            ylab = 'Mean',
+            main = main,
+            axes = FALSE,
+            font = font,
+            font.main = font.main,
+            font.lab  = font )
+    } 
+    if ( bullets == 'boxplot' ) {
+      plot( x    = DF_mean$PredictionMean,
+            ylim = c( min( c(DF_mean$PredictionMean, 
+                             DF_mean$IstVAluesMean,
+                             bp_data[, 1]) ),
+                      max( c(DF_mean$PredictionMean, 
+                             DF_mean$IstVAluesMean,
+                             bp_data[, 5]) ) ),
+            xlab = 'Groups',
+            ylab = 'Mean',
+            main = main,
+            axes = FALSE,
+            font = font,
+            font.main = font.main,
+            font.lab  = font )
+    }
+    
   } else {
     if ( ylim.default ) {
-      plot( x    = DF_mean$PredictionMean,
-            ylim = c( min(c(DF_mean$PredictionMean, 
-                            DF_mean$IstVAluesMean)),
-                      max(c(DF_mean$PredictionMean, 
-                            DF_mean$IstVAluesMean)) ), 
-            axes = FALSE,
-            ... )
+      if ( bullets == 'normal' ) {
+        plot( x    = DF_mean$PredictionMean,
+              ylim = c( min( c(DF_mean$PredictionMean, 
+                               DF_mean$IstVAluesMean) ),
+                        max( c(DF_mean$PredictionMean, 
+                               DF_mean$IstVAluesMean) ) ), 
+              axes      = FALSE,
+              font      = font,
+              font.main = font.main,
+              font.lab  = font,
+              ... )
+      } 
+      if ( bullets == 'boxplot' ) {
+        plot( x    = DF_mean$PredictionMean,
+              ylim = c( min( c(DF_mean$PredictionMean, 
+                               DF_mean$IstVAluesMean,
+                               bp_data[, 1]) ),
+                        max( c(DF_mean$PredictionMean, 
+                               DF_mean$IstVAluesMean,
+                               bp_data[, 5]) ) ), 
+              axes      = FALSE,
+              font      = font,
+              font.main = font.main,
+              font.lab  = font,
+              ... )
+      }
+      
     } else {
-      plot( x    = DF_mean$PredictionMean, 
-            axes = FALSE,  
+      plot( x         = DF_mean$PredictionMean, 
+            axes      = FALSE, 
+            font      = font,
+            font.main = font.main,
+            font.lab  = font,
             ... )
     }
     
@@ -180,22 +258,64 @@ lift <- function( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
            border = NA )
   
   lines(  x = DF_mean$PredictionMean, lwd = 2, col = rgb(135, 206, 235, 255, maxColorValue = 255) )
-  points( x = DF_mean$PredictionMean, cex = 2, col = rgb(135, 206, 235, 255, maxColorValue = 255), pch = 19 )
-  lines(  x = DF_mean$IstVAluesMean,  lwd = 2, col = rgb(240, 128, 128, 255, maxColorValue = 255) )
-  points( x = DF_mean$IstVAluesMean,  cex = 2, col = rgb(240, 128, 128, 255, maxColorValue = 255), pch = 19 )
+  points( x = DF_mean$PredictionMean, cex = bullets.cex, col = rgb(135, 206, 235, 255, maxColorValue = 255), pch = 19 )
   
-  axis( side = 1, at = 1:ngroups, labels = 1:ngroups )
-  axis( side = 2, at = yaxp, labels = yaxp )
+  if ( bullets == 'normal' ) {
+    lines(  x = DF_mean$IstVAluesMean,  lwd = 2, col = rgb(240, 128, 128, 255, maxColorValue = 255) )
+    points( x = DF_mean$IstVAluesMean,  cex = bullets.cex, col = rgb(240, 128, 128, 255, maxColorValue = 255), pch = 19 )
+  }
+  
+  if ( bullets == 'boxplot' ) {
+    lines(  x = DF_mean$IstVAluesMean,  lwd = 2, col = rgb(240, 128, 128, 150, maxColorValue = 255) )
+    
+    for ( i in 1:nrow(bp_data) ) {
+      rect( xleft   = i - 0.1,
+            xright  = i + 0.1,
+            ybottom = bp_data[i, 2],
+            ytop    = bp_data[i, 4],
+            col     = rgb(240, 128, 128, 80, maxColorValue = 255),
+            border  = rgb(240, 128, 128, 255, maxColorValue = 255) )
+      
+      segments( x0  = i - 0.1,
+                x1  = i + 0.1,
+                y0  = bp_data[i, 3],
+                y1  = bp_data[i, 3],
+                col = rgb(240, 128, 128, 255, maxColorValue = 255),
+                lwd = 2)
+      
+      segments( x0  = i,
+                x1  = i,
+                y0  = bp_data[i, 1],
+                y1  = bp_data[i, 2],
+                col = rgb(240, 128, 128, 255, maxColorValue = 255) )
+      
+      segments( x0  = i,
+                x1  = i,
+                y0  = bp_data[i, 4],
+                y1  = bp_data[i, 5],
+                col = rgb(240, 128, 128, 255, maxColorValue = 255) )
+    }
+  }
+  
+  if ( ! is.null(Args$las) ) {
+    las <- Args$las
+  } else {
+    las <- 1
+  }
+  
+  axis( side = 1, at = 1:ngroups, labels = 1:ngroups, las = las, font = font )
+  axis( side = 2, at = yaxp, labels = yaxp, las = las, font = font )
   
   if ( !is.na(legend.pos) ) {
     legend( legend.pos,
-            legend = c('Prediction', 'Real values'),
-            lty = c(1,1),
-            lwd = c(2,2),
-            col = c( rgb(135, 206, 235, 255, maxColorValue = 255),
-                     rgb(240, 128, 128, 255, maxColorValue = 255)),
-            bg = rgb(100, 100, 100, 10, maxColorValue = 255),
-            box.col = NA )
+            legend    = c('Prediction', 'Real values'),
+            lty       = c(1,1),
+            lwd       = c(2,2),
+            col       = c( rgb(135, 206, 235, 255, maxColorValue = 255),
+                           rgb(240, 128, 128, 255, maxColorValue = 255)),
+            bg        = rgb(100, 100, 100, 10, maxColorValue = 255),
+            box.col   = NA,
+            text.font = font )
   }
   
   box()
