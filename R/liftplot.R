@@ -175,6 +175,7 @@ lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft',
     }
     if ( bullets == 'normal' ) {
       plot( x    = DF_mean$PredictionMean,
+            cex  = 0,
             ylim = c( min( c(DF_mean$PredictionMean, 
                              DF_mean$IstVAluesMean) ),
                       max( c(DF_mean$PredictionMean, 
@@ -189,6 +190,7 @@ lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft',
     } 
     if ( bullets == 'boxplot' ) {
       plot( x    = DF_mean$PredictionMean,
+            cex  = 0,
             ylim = c( min( c(DF_mean$PredictionMean, 
                              DF_mean$IstVAluesMean,
                              bp_data[, 1]) ),
@@ -208,6 +210,7 @@ lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft',
     if ( ylim.default ) {
       if ( bullets == 'normal' ) {
         plot( x    = DF_mean$PredictionMean,
+              cex  = 0,
               ylim = c( min( c(DF_mean$PredictionMean, 
                                DF_mean$IstVAluesMean) ),
                         max( c(DF_mean$PredictionMean, 
@@ -220,6 +223,7 @@ lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft',
       } 
       if ( bullets == 'boxplot' ) {
         plot( x    = DF_mean$PredictionMean,
+              cex  = 0,
               ylim = c( min( c(DF_mean$PredictionMean, 
                                DF_mean$IstVAluesMean,
                                bp_data[, 1]) ),
@@ -234,7 +238,8 @@ lift <- function( pred, ist = NA, ngroups = 10L, legend.pos = 'bottomleft',
       }
       
     } else {
-      plot( x         = DF_mean$PredictionMean, 
+      plot( x         = DF_mean$PredictionMean,
+            cex       = 0, 
             axes      = FALSE, 
             font      = font,
             font.main = font.main,
