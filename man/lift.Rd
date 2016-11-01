@@ -2,18 +2,14 @@
 \alias{lift}
 \title{Create a liftplot}
 \usage{
-	lift( pred, ist = NA, weights = NA, w.pred = FALSE, w.ist = FALSE,
-          ngroups = 10L, legend.pos = 'bottomleft', ylim.default = FALSE,
+	lift( pred, ist = NA, ngroups = 10L, legend.pos = "bottomleft", 
+          ylim.default = TRUE, bullets = "normal", bullets.cex = 2, 
           ... )
 }
 \arguments{
 	\item{pred}{A vector of predictions or a object of class 'lm', 'glm', 'rfsrc' or 'randomForest'}
 
 	\item{ist}{An additional vector of the values which were predicted}
-	
-	\item{w.pred}{Apply the weights only on the prediction values}
-	
-	\item{w.ist}{Apply the weights only on the ist-values}
 
 	\item{ngroups}{An integer number of groups}
 
@@ -21,6 +17,10 @@
 	
 	\item{ylim.default}{If the default ylim values should be used with additional parameters to plot, than set to 'ylim.default = TRUE'}
 
+	\item{bullets}{If set to 'normal' (default) than just a normal bullet point is drawn for the mean in the groups. If bullets is set to 'boxplot', than over every bullet of the ist values a boxplot will be drawn.}
+	
+	\item{bullets.cex}{Size of the 'normal' bullet points.}
+	
 	\item{...}{Additional prameter which can be passed to plot}
 }
 \description{
