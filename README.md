@@ -33,9 +33,12 @@ mod3 <- randomForest( formula = x ~ y,
                      
 
 par( mfrow = c(1,3) )
-lift( mod1 )
-lift( mod2 )
-lift( mod3 )
+lift(mod1, 
+     col1    = c(red = 113, blue = 198, green = 113),
+     col2    = c(red = 125, blue = 158, green = 192),
+     bullets = "boxplot")
+lift(mod2, col1 = c(red = 113, blue = 198, green = 113))
+lift(mod3, col2 = c(red = 125, blue = 158, green = 192))
 par( mfrow = c(1,1) )
 ```
 The plot looks like the following:
