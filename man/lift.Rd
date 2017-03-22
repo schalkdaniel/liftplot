@@ -17,9 +17,13 @@
 	
 	\item{ylim.default}{If the default ylim values should be used with additional parameters to plot, than set to 'ylim.default = TRUE'}
 
-	\item{bullets}{If set to 'normal' (default) than just a normal bullet point is drawn for the mean in the groups. If bullets is set to 'boxplot', than over every bullet of the ist values a boxplot will be drawn.}
+	\item{bullets}{If set to 'normal' (default) than just a normal bullet point is drawn for the mean in the groups. If bullets is set to 'boxplot', than over every bullet of the prediction values a boxplot will be drawn.}
 	
 	\item{bullets.cex}{Size of the 'normal' bullet points.}
+	
+	\item{col1}{Specify the color of the prediction curve}
+	
+	\item{col2}{Specify the color of the ist curve}
 	
 	\item{...}{Additional prameter which can be passed to plot}
 }
@@ -29,29 +33,32 @@
 \examples{
 ## Simulate data with non-normal distribution
 set.seed( pi )
-x <- sort( runif(100, 0, 2) )
-y <- 3 * exp(2 * x) + rchisq(100, 10)
+x = sort( runif(100, 0, 2) )
+y = 3 * exp(2 * x) + rchisq(100, 10)
 
-DF <- data.frame( x = x, y = y )
+DF = data.frame(x = x, y = y)
 
 ## For class lm:
-mod1 <- lm( formula = y ~ x,
-            data    = DF )
+mod1 = lm(formula = y ~ x,
+          data    = DF)
 
 ## For class nls:
-mod2 <- nls( formula = y ~ a * exp(b * x),
-             data    = DF,
-             start   = list(a = 1, b = 1) )
+mod2 = nls(formula = y ~ a * exp(b * x),
+           data    = DF,
+           start   = list(a = 1, b = 1))
 
 ## For class randomForest:
-require( randomForest )
-mod3 <- randomForest( formula = x ~ y,
-                      data    = DF )
+require(randomForest)
+mod3 = randomForest(formula = x ~ y,
+                    data    = DF)
                      
 
-par( mfrow = c(1,3) )
-lift( mod1 )
-lift( mod2 )
-lift( mod3 )
-par( mfrow = c(1,1) )
+par(mfrow = c(1,3))
+lift(mod1, 
+     col1    = c(red = 113, blue = 198, green = 113),
+     col2    = c(red = 125, blue = 158, green = 192),
+     bullets = "boxplot")
+lift(mod2, col1 = c(red = 113, blue = 198, green = 113))
+lift(mod3, col2 = c(red = 125, blue = 158, green = 192))
+par(mfrow = c(1,1))
 }
